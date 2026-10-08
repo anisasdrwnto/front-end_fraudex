@@ -7,6 +7,7 @@ export async function loginUser(credentials: { email: string; password: string }
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Bypass-Tunnel-Reminder": "true", // Tambahkan header ini untuk bypass halaman peringatan LocalTunnel
             },
             body: JSON.stringify({
                 email: credentials.email,
@@ -38,6 +39,7 @@ export async function registerUser(userData: { fullName: string; email: string; 
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                "Bypass-Tunnel-Reminder": "true", // Tambahkan juga di sini
             },
             body: JSON.stringify({
                 name: userData.fullName,
