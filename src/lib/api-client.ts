@@ -1,16 +1,19 @@
-// Simulasi API Client untuk kebutuhan Front-End (Mock API)
+// API Client yang dinamis untuk integrasi autentikasi
 
 export async function loginUser(credentials: { email: string; password: string }) {
     // Simulasi jeda jaringan (loading) selama 1 detik
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Simulasi pengecekan sederhana untuk testing front-end
     if (credentials.email && credentials.password) {
+        // Ambil nama dari bagian depan email sebagai representasi nama pengguna yang login
+        const extractedName = credentials.email.split("@")[0];
+        const formattedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
+
         return { 
             success: true, 
             data: { 
                 token: "mock-jwt-token-12345", 
-                user: { name: "Anisa", email: credentials.email, role: "user" } 
+                user: { name: formattedName, email: credentials.email, role: "user" } 
             } 
         };
     }
@@ -19,7 +22,6 @@ export async function loginUser(credentials: { email: string; password: string }
 }
 
 export async function registerUser(userData: { fullName: string; email: string; password: string }) {
-    // Simulasi jeda jaringan (loading) selama 1 detik
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     if (userData.email && userData.password) {
