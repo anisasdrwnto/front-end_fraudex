@@ -7,7 +7,7 @@ export async function loginUser(credentials: { email: string; password: string }
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Bypass-Tunnel-Reminder": "true", // Tambahkan header ini untuk bypass halaman peringatan LocalTunnel
+                "Bypass-Tunnel-Reminder": "true",
             },
             body: JSON.stringify({
                 email: credentials.email,
@@ -21,11 +21,17 @@ export async function loginUser(credentials: { email: string; password: string }
             return { success: false, message: data.detail || "Email atau kata sandi salah." };
         }
 
+        const userData = { name: data.name, role: data.role, email: credentials.email };
+        
+        // Simpan token dan data user ke localStorage untuk sesi di browser
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("user", JSON.stringify(userData));
+
         return {
             success: true,
             data: {
                 token: data.access_token,
-                user: { name: data.name, email: credentials.email, role: data.role }
+                user: userData
             }
         };
     } catch (error) {
@@ -39,7 +45,7 @@ export async function registerUser(userData: { fullName: string; email: string; 
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "Bypass-Tunnel-Reminder": "true", // Tambahkan juga di sini
+                "Bypass-Tunnel-Reminder": "true",
             },
             body: JSON.stringify({
                 name: userData.fullName,
