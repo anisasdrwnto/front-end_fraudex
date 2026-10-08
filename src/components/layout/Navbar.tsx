@@ -23,7 +23,7 @@ interface NavbarProps {
   onLogout?: () => void; // Tambahan props callback logout opsional
 }
 
-export default function Navbar({ initialUser = { name: "Anisa", role: "user" }, onLogout }: NavbarProps) {
+export default function Navbar({ initialUser = null, onLogout }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTentangOpen, setIsTentangOpen] = useState(false);
   const [isUmpanOpen, setIsUmpanOpen] = useState(false);
