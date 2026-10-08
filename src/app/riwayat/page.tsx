@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { HistoryItemCard } from '@/components/features/sms-checker/HistoryItemCard';
@@ -33,7 +33,7 @@ const mockHistory = [
 ];
 
 export default function RiwayatPage() {
-  const currentUser = { name: "Anisa", role: "user" };
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
