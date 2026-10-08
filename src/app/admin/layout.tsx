@@ -17,6 +17,7 @@ import {
   Sun,
   Search
 } from "lucide-react";
+import { LogoutModal } from "@/components/features/auth/LogoutModal"; // <-- Tambahkan import modal
 
 const jersey = Jersey_15({ weight: "400", subsets: ["latin"], display: "swap" });
 const quantico = Quantico({ weight: ["400", "700"], subsets: ["latin"], display: "swap" });
@@ -25,6 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); // <-- State untuk modal logout
   const pathname = usePathname();
 
   const menuItems = [
@@ -33,10 +35,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: "Manajemen Data Pengguna", href: "/admin/data-pengguna", icon: Users },
   ];
 
-  // Filter menu berdasarkan ketikan pencarian di sidebar
   const filteredMenu = menuItems.filter((item) => 
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Fungsi saat tombol "Ya, Keluar" di modal diklik
+  const handleConfirmLogout = () => {
+    // Hapus cookie sesi fraudex
+    document.cookie = "fraudex_session=; Max-Age=0; path=/;";
+    // Arahkan ke landing page (/)
+    window.location.href = "/";
+  };
 
   return (
     <div className={`min-h-screen flex relative ${isDarkMode ? "bg-[#0b0f19] text-gray-100" : "bg-gray-50 text-gray-900"} ${quantico.className}`}>
@@ -71,7 +80,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         ${isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
       `}>
         <div>
-          {/* Logo & Judul Fraudex (Ukuran Diperkecil menjadi text-4xl) */}
+          {/* Logo & Judul Fraudex */}
           <div className="p-5 flex items-center gap-2.5 border-b border-white/10">
             <Image src="/logo.png" alt="Logo Fraudex" width={32} height={32} className="object-contain w-8 h-8" />
             <span className={`${jersey.className} text-4xl tracking-wider pt-1`}>
@@ -140,14 +149,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </button>
           </div>
 
-          {/* Tombol Logout */}
-          <Link 
-            href="/login"
-            className="flex items-center justify-center gap-3 bg-[#C92A2A] hover:bg-red-700 text-white p-3.5 rounded-xl transition-colors font-bold text-sm shadow-md"
+          {/* Tombol Logout (Diubah menjadi button yang memicu modal) */}
+          <button 
+            type="button"
+            onClick={() => setIsLogoutModalOpen(true)}
+            className="flex items-center justify-center gap-3 bg-[#C92A2A] hover:bg-red-700 text-white p-3.5 rounded-xl transition-colors font-bold text-sm shadow-md cursor-pointer"
           >
             <LogOut size={18} />
             <span>Logout</span>
-          </Link>
+          </button>
         </div>
       </aside>
 
@@ -155,6 +165,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <main className="flex-1 p-6 md:p-10 overflow-y-auto mt-16 lg:mt-0">
         {children}
       </main>
+
+      {/* Modal Konfirmasi Logout */}
+      <LogoutModal 
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleConfirmLogout}
+      />
     </div>
   );
 }

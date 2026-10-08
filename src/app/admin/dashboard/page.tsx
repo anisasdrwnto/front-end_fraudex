@@ -10,8 +10,9 @@ export default function AdminDashboardPage() {
   const totalAll = normalCount + suspiciousCount + fraudCount;
 
   return (
-    <div className="max-w-6xl mx-auto flex flex-col gap-8">
-      <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
+    <div className="max-w-6xl mx-auto flex flex-col gap-8 p-6 md:p-8">
+      {/* Header Dashboard Admin (Tanpa tombol keluar di pojok kanan) */}
+      <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-[#0B0A33]">Dashboard Admin</h1>
 
       {/* Komponen Kartu Statistik */}
       <StatsCards 
