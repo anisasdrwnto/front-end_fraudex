@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { Quantico } from "next/font/google";
+import { useRouter } from "next/navigation";
 import { SMSResultAlert } from "./SMSResultAlert";
 import { useSMSCheckMutation } from "@/store/queries/useSMSQueries";
 import { SMSCheckResult } from "@/types";
@@ -13,12 +14,31 @@ export function SMSInputForm() {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [smsText, setSmsText] = useState("");
   const [analysisResult, setAnalysisResult] = useState<SMSCheckResult | null>(null);
+  const router = useRouter();
 
   const smsMutation = useSMSCheckMutation();
 
   const handleAnalyze = () => {
     if (!smsText.trim()) return;
 
+    // 1. Cek apakah user sudah login berdasarkan keberadaan cookie sesi backend
+    const isLoggedIn = document.cookie.includes("fraudex_session=");
+
+    // 2. Jika belum login, terapkan batasan limit 3x percobaan via localStorage
+    if (!isLoggedIn) {
+      const currentAttempts = parseInt(localStorage.getItem("guest_sms_attempts") || "0", 10);
+
+      if (currentAttempts >= 3) {
+        alert("Batas uji coba gratis Anda telah habis (3x). Silakan masuk atau daftar akun untuk melanjutkan pemeriksaan SMS.");
+        router.push("/login"); // Lempar paksa ke halaman login
+        return;
+      }
+
+      // Tambah 1 ke jumlah percobaan tamu dan simpan kembali
+      localStorage.setItem("guest_sms_attempts", (currentAttempts + 1).toString());
+    }
+
+    // 3. Jalankan mutasi analisis SMS jika lolos limit atau sudah login
     smsMutation.mutate(smsText, {
       onSuccess: (data) => {
         setAnalysisResult(data);
