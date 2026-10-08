@@ -1,37 +1,64 @@
-// API Client yang dinamis untuk integrasi autentikasi
+// API Client yang terhubung ke Backend FastAPI via LocalTunnel
+const API_BASE_URL = "https://cold-lions-relax.loca.lt";
 
 export async function loginUser(credentials: { email: string; password: string }) {
-    // Simulasi jeda jaringan (loading) selama 1 detik
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email: credentials.email,
+                password: credentials.password,
+            }),
+        });
 
-    if (credentials.email && credentials.password) {
-        // Ambil nama dari bagian depan email sebagai representasi nama pengguna yang login
-        const extractedName = credentials.email.split("@")[0];
-        const formattedName = extractedName.charAt(0).toUpperCase() + extractedName.slice(1);
+        const data = await response.json();
 
-        return { 
-            success: true, 
-            data: { 
-                token: "mock-jwt-token-12345", 
-                user: { name: formattedName, email: credentials.email, role: "user" } 
-            } 
+        if (!response.ok) {
+            return { success: false, message: data.detail || "Email atau kata sandi salah." };
+        }
+
+        return {
+            success: true,
+            data: {
+                token: data.access_token,
+                user: { name: data.name, email: credentials.email, role: data.role }
+            }
         };
+    } catch (error) {
+        return { success: false, message: "Terjadi kesalahan jaringan ke server." };
     }
-
-    return { success: false, message: "Email atau kata sandi salah." };
 }
 
 export async function registerUser(userData: { fullName: string; email: string; password: string }) {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                name: userData.fullName,
+                email: userData.email,
+                password: userData.password,
+            }),
+        });
 
-    if (userData.email && userData.password) {
-        return { 
-            success: true, 
-            data: { 
-                message: "Registrasi berhasil! Silakan masuk." 
-            } 
+        const data = await response.json();
+
+        if (!response.ok) {
+            return { success: false, message: data.detail || "Gagal mendaftarkan akun." };
+        }
+
+        return {
+            success: true,
+            data: {
+                message: "Registrasi berhasil! Silakan masuk."
+            }
         };
+    } catch (error) {
+        return { success: false, message: "Terjadi kesalahan jaringan ke server." };
     }
-
-    return { success: false, message: "Gagal mendaftarkan akun." };
 }
