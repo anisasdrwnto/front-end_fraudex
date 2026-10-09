@@ -34,16 +34,23 @@ export function LoginForm() {
     setErrorMessage("");
     loginMutation.mutate(data, {
       onSuccess: (response: any) => {
-        // Ambil data user dari localStorage yang baru saja disimpan oleh api-client.ts
-        const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
+        // Ambil data user dari localStorage
+        const savedUserJSON = localStorage.getItem("user");
+        console.log("DEBUG Mentah localStorage user:", savedUserJSON);
 
-        console.log("Login sukses! Role user:", savedUser.role);
+        const savedUser = JSON.parse(savedUserJSON || "{}");
+        console.log("DEBUG Objek Parsed User:", savedUser);
+        console.log("DEBUG Role user saat ini:", savedUser.role);
 
-        // Logika pengarahan halaman berdasarkan role
-        if (savedUser && savedUser.role && savedUser.role.toLowerCase() === "admin") {
+        // Paksa ubah ke lowercase dan hilangkan spasi untuk mencegah typo
+        const userRole = savedUser?.role ? String(savedUser.role).trim().toLowerCase() : "";
+
+        if (userRole === "admin") {
+          console.log("Mengarahkan ke Dashboard Admin...");
           window.location.replace("/admin/dashboard");
         } else {
-          window.location.replace("/"); // Masuk ke landing page untuk user biasa
+          console.log("Mengarahkan ke Landing Page User...");
+          window.location.replace("/"); 
         }
       },
       onError: (err: any) => {
