@@ -34,7 +34,8 @@ export function LoginForm() {
     setErrorMessage("");
     loginMutation.mutate(data, {
       onSuccess: () => {
-        window.location.href = "/"; // Masuk ke beranda setelah berhasil
+        // Gunakan replace agar halaman memuat ulang state localStorage dari awal
+        window.location.replace("/"); 
       },
       onError: (err: any) => {
         setErrorMessage(err.message || "Gagal masuk");
