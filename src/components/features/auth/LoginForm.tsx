@@ -36,7 +36,9 @@ export function LoginForm() {
       onSuccess: (response: any) => {
         const savedUser = JSON.parse(localStorage.getItems("user") || "{}");
 
-        if(savedUser.role === "admin"){
+        console.log("Role user saat ini : ", savedUser.role);
+
+        if(savedUser && savedUser.role.toLowerCase() === "admin"){
           window.location.replace("/admin/dashboard");
         }else{
             window.location.replace("/"); 
