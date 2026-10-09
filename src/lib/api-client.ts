@@ -1,5 +1,5 @@
 // API Client yang terhubung ke Backend FastAPI via LocalTunnel
-const API_BASE_URL = "https://cold-lions-relax.loca.lt";
+const API_BASE_URL = "https://yellow-chefs-refuse.loca.lt";
 
 export async function loginUser(credentials: { email: string; password: string }) {
     try {
