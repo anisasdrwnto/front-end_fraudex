@@ -33,9 +33,15 @@ export function LoginForm() {
   const onSubmit = (data: LoginFormData) => {
     setErrorMessage("");
     loginMutation.mutate(data, {
-      onSuccess: () => {
-        // Gunakan replace agar halaman memuat ulang state localStorage dari awal
-        window.location.replace("/"); 
+      onSuccess: (response: any) => {
+        const savedUser = JSON.parse(localStorage.getItems("user") || "{}");
+
+        if(savedUser.role === "admin"){
+          window.location.replace("/admin/dashboard");
+        }else{
+            window.location.replace("/"); 
+        }
+        
       },
       onError: (err: any) => {
         setErrorMessage(err.message || "Gagal masuk");
