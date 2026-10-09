@@ -21,9 +21,10 @@ export async function loginUser(credentials: { email: string; password: string }
             return { success: false, message: data.detail || "Email atau kata sandi salah." };
         }
 
+        // PENTING: Ambil 'name' dan 'role' langsung dari JSON Response FastAPI
         const userData = { name: data.name, role: data.role, email: credentials.email };
         
-        // Simpan token dan data user ke localStorage untuk sesi di browser
+        // Simpan token dan data user ke localStorage browser agar Navbar bisa membacanya
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("user", JSON.stringify(userData));
 

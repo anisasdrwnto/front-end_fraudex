@@ -1,19 +1,47 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Camera, Save, X } from "lucide-react";
 import Link from "next/link";
 
-export function ProfileEditCard() {
-  const [firstName, setFirstName] = useState("Anisa");
-  const [lastName, setLastName] = useState("Rahmawati");
+interface ProfileEditCardProps {
+  user?: { name: string; role: string; email?: string } | null;
+}
+
+export function ProfileEditCard({ user }: ProfileEditCardProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [about, setAbout] = useState("Mahasiswa Teknik Informatika UNS yang tertarik pada web development dan keamanan siber.");
   const [isSaved, setIsSaved] = useState(false);
   
   // State untuk menyimpan preview foto profil yang diunggah
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Ambil dan pecah nama dari props atau localStorage saat komponen dimuat
+  useEffect(() => {
+    let activeUser = user;
+    if (!activeUser && typeof window !== "undefined") {
+      const saved = localStorage.getItem("user");
+      if (saved) {
+        try {
+          activeUser = JSON.parse(saved);
+        } catch (e) {
+          activeUser = null;
+        }
+      }
+    }
+
+    if (activeUser && activeUser.name) {
+      const nameParts = activeUser.name.trim().split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
+    } else {
+      setFirstName("Pengguna");
+      setLastName("");
+    }
+  }, [user]);
 
   // Fungsi untuk menangani pemilihan file gambar
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -26,6 +54,19 @@ export function ProfileEditCard() {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Perbarui juga data di localStorage jika nama diubah
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("user");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          parsed.name = `${firstName} ${lastName}`.trim();
+          localStorage.setItem("user", JSON.stringify(parsed));
+        } catch (e) {}
+      }
+    }
+
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 3000);
   };
@@ -62,7 +103,7 @@ export function ProfileEditCard() {
             {avatarPreview ? (
               <img src={avatarPreview} alt="Avatar Preview" className="w-full h-full object-cover" />
             ) : (
-              <span>{firstName.charAt(0)}</span>
+              <span>{firstName ? firstName.charAt(0).toUpperCase() : "U"}</span>
             )}
             <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Camera size={22} className="text-white" />

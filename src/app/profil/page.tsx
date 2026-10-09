@@ -1,12 +1,28 @@
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { ProfileEditCard } from '@/components/features/auth/ProfileEditCard';
 
 export default function EditProfilPage() {
-  const currentUser = { name: "Anisa", role: "user" };
+  const [currentUser, setCurrentUser] = useState<{ name: string; role: string; email?: string } | null>(null);
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        setCurrentUser({
+          name: parsed.name || "Pengguna",
+          role: parsed.role || "user",
+          email: parsed.email || "",
+        });
+      } catch (e) {
+        console.error("Gagal parsing data user dari localStorage");
+      }
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -24,7 +40,7 @@ export default function EditProfilPage() {
 
       {/* Konten Utama Kartu Edit Profil (Efek Menimpa Banner) */}
       <main className="flex-1 max-w-4xl w-full mx-auto px-6 -mt-10 pb-20 z-10">
-        <ProfileEditCard />
+        <ProfileEditCard user={currentUser} />
       </main>
 
       <Footer onOpenReview={() => {}} />
