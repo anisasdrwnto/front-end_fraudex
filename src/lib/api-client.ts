@@ -1,73 +1,108 @@
-// API Client yang terhubung ke Backend FastAPI via LocalTunnel
-const API_BASE_URL = "https://wet-mice-cheat.loca.lt";
+import { type AuthUser, saveSession } from "./auth-storage";
 
-export async function loginUser(credentials: { email: string; password: string }) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/auth/login`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Bypass-Tunnel-Reminder": "true",
-            },
-            body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-            }),
-        });
+// URL backend dibaca dari environment variable, jangan di-hardcode lagi.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const API_PREFIX = `${API_BASE_URL}/api/v1`;
 
-        const data = await response.json();
+type Result<T> =
+  | { success: true; data: T }
+  | { success: false; message: string };
 
-        if (!response.ok) {
-            return { success: false, message: data.detail || "Email atau kata sandi salah." };
-        }
-
-        // PENTING: Ambil 'name' dan 'role' langsung dari JSON Response FastAPI
-        const userData = { name: data.name, role: data.role, email: credentials.email };
-        
-        // Simpan token dan data user ke localStorage browser agar Navbar bisa membacanya
-        localStorage.setItem("token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(userData));
-
-        return {
-            success: true,
-            data: {
-                token: data.access_token,
-                user: userData
-            }
-        };
-    } catch (error) {
-        return { success: false, message: "Terjadi kesalahan jaringan ke server." };
-    }
+interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  name: string;
+  role: "admin" | "user";
+  email: string;
 }
 
-export async function registerUser(userData: { fullName: string; email: string; password: string }) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/v1/auth/register`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Bypass-Tunnel-Reminder": "true",
-            },
-            body: JSON.stringify({
-                name: userData.fullName,
-                email: userData.email,
-                password: userData.password,
-            }),
-        });
+// Pesan error FastAPI: string untuk error biasa, array untuk error validasi (422).
+function extractMessage(data: unknown, fallback: string): string {
+  const detail = (data as { detail?: unknown } | null)?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    const first = detail[0] as { msg?: string } | undefined;
+    if (first?.msg) return first.msg;
+  }
+  return fallback;
+}
 
-        const data = await response.json();
+async function postJson(path: string, body: unknown) {
+  const res = await fetch(`${API_PREFIX}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  let data: unknown = null;
+  try {
+    data = await res.json();
+  } catch {
+    // respons bukan JSON
+  }
+  return { res, data };
+}
 
-        if (!response.ok) {
-            return { success: false, message: data.detail || "Gagal mendaftarkan akun." };
-        }
+function isTokenResponse(data: unknown): data is TokenResponse {
+  const d = data as Partial<TokenResponse> | null;
+  return Boolean(d?.access_token && d?.refresh_token && d?.role);
+}
 
-        return {
-            success: true,
-            data: {
-                message: "Registrasi berhasil! Silakan masuk."
-            }
-        };
-    } catch (error) {
-        return { success: false, message: "Terjadi kesalahan jaringan ke server." };
+export async function loginUser(credentials: {
+  email: string;
+  password: string;
+}): Promise<Result<{ token: string; user: AuthUser }>> {
+  try {
+    const { res, data } = await postJson("/auth/login", {
+      email: credentials.email,
+      password: credentials.password,
+    });
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: extractMessage(data, "Email atau kata sandi salah."),
+      };
     }
+    if (!isTokenResponse(data)) {
+      return { success: false, message: "Respons server tidak valid." };
+    }
+
+    const user: AuthUser = { name: data.name, role: data.role, email: data.email };
+    saveSession({
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      user,
+    });
+
+    return { success: true, data: { token: data.access_token, user } };
+  } catch {
+    return { success: false, message: "Tidak bisa terhubung ke server." };
+  }
+}
+
+export async function registerUser(userData: {
+  fullName: string;
+  email: string;
+  password: string;
+}): Promise<Result<{ message: string }>> {
+  try {
+    const { res, data } = await postJson("/auth/register", {
+      name: userData.fullName,
+      email: userData.email,
+      password: userData.password,
+    });
+
+    if (!res.ok) {
+      return {
+        success: false,
+        message: extractMessage(data, "Gagal mendaftarkan akun."),
+      };
+    }
+    return {
+      success: true,
+      data: { message: "Registrasi berhasil! Silakan masuk." },
+    };
+  } catch {
+    return { success: false, message: "Tidak bisa terhubung ke server." };
+  }
 }

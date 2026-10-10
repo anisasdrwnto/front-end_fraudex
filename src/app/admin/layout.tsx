@@ -17,7 +17,8 @@ import {
   Sun,
   Search
 } from "lucide-react";
-import { LogoutModal } from "@/components/features/auth/LogoutModal"; // <-- Tambahkan import modal
+import { LogoutModal } from "@/components/features/auth/LogoutModal"; 
+import { logout } from "@/lib/auth-storage";
 
 const jersey = Jersey_15({ weight: "400", subsets: ["latin"], display: "swap" });
 const quantico = Quantico({ weight: ["400", "700"], subsets: ["latin"], display: "swap" });
@@ -41,10 +42,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Fungsi saat tombol "Ya, Keluar" di modal diklik
   const handleConfirmLogout = () => {
-    // Hapus cookie sesi fraudex
-    document.cookie = "fraudex_session=; Max-Age=0; path=/;";
-    // Arahkan ke landing page (/)
-    window.location.href = "/";
+    logout("/"); // hapus localStorage + cookie, lalu reload ke landing page
   };
 
   return (

@@ -13,12 +13,16 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (pathname.startsWith('/admin')) {
+  const isAdminArea = pathname.startsWith('/admin');
+
+  // Area admin: harus login dan harus admin
+  if (isAdminArea) {
     if (!role) return NextResponse.redirect(new URL('/login', request.url));
     if (role !== 'admin') return NextResponse.redirect(new URL('/', request.url));
   }
 
-  if ((pathname.startsWith('/login') || pathname.startsWith('/register')) && role === 'admin') {
+  // Admin yang sedang login hanya boleh berada di /admin
+  if (role === 'admin' && !isAdminArea) {
     return NextResponse.redirect(new URL('/admin/dashboard', request.url));
   }
 
@@ -26,5 +30,6 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/login', '/register'],
+  // semua halaman, kecuali file statis, aset Next.js, dan /api
+  matcher: ['/((?!_next/|api/|.*\\..*).*)'],
 };

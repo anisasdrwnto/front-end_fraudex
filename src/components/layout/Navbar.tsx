@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { LogoutModal } from "@/components/features/auth/LogoutModal";
+import { logout } from "@/lib/auth-storage";
 
 const jersey = Jersey_15({ weight: "400", subsets: ["latin"], display: "swap" });
 const quantico = Quantico({ weight: ["400", "700"], subsets: ["latin"], display: "swap" });
@@ -34,31 +35,23 @@ export default function Navbar({ initialUser = null, onLogout }: NavbarProps) {
   // DEBUGGING: Tambahkan useEffect untuk membaca dan melacak localStorage
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    console.log("DEBUG Navbar - Isi localStorage 'user':", savedUser);
-
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser);
-        setCurrentUser(parsedUser);
-        console.log("DEBUG Navbar - Berhasil set currentUser:", parsedUser);
-      } catch (e) {
-        console.error("DEBUG Navbar - Gagal parse JSON user:", e);
-      }
-    } else {
-      console.log("DEBUG Navbar - Tidak ada sesi user di localStorage.");
+    if (!savedUser) return;
+    try {
+      setCurrentUser(JSON.parse(savedUser));
+    } catch {
+      // data rusak, abaikan
     }
   }, []);
 
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  const handleLogoutConfirm = () => {
+    const handleLogoutConfirm = () => {
     setIsLogoutModalOpen(false);
     setCurrentUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     if (onLogout) {
       onLogout();
     }
+    logout("/");
   };
 
   return (

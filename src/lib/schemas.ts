@@ -8,7 +8,7 @@ export const loginSchema = z.object({
     .email({ message: "Format email tidak valid" }),
   password: z
     .string()
-    .min(6, { message: "Kata sandi minimal harus 6 karakter" }),
+    .min(1, { message: "Kata sandi wajib diisi" }),
 });
 
 // Skema Validasi Form Register (Pendaftaran Akun)
@@ -22,7 +22,8 @@ export const registerSchema = z.object({
     .email({ message: "Format email tidak valid" }),
   password: z
     .string()
-    .min(6, { message: "Kata sandi minimal harus 6 karakter" }),
+    .min(8, { message: "Kata sandi minimal harus 8 karakter" })
+    .max(64, { message: "Kata sandi maksimal 64 karakter" }),
 });
 
 // Skema Validasi Input Pengecekan SMS

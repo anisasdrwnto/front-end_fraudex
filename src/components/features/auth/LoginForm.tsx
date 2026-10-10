@@ -33,27 +33,12 @@ export function LoginForm() {
   const onSubmit = (data: LoginFormData) => {
     setErrorMessage("");
     loginMutation.mutate(data, {
-      onSuccess: (response: any) => {
-        // Ambil data user dari localStorage
-        const savedUserJSON = localStorage.getItem("user");
-        console.log("DEBUG Mentah localStorage user:", savedUserJSON);
-
-        const savedUser = JSON.parse(savedUserJSON || "{}");
-        console.log("DEBUG Objek Parsed User:", savedUser);
-        console.log("DEBUG Role user saat ini:", savedUser.role);
-
-        // Paksa ubah ke lowercase dan hilangkan spasi untuk mencegah typo
-        const userRole = savedUser?.role ? String(savedUser.role).trim().toLowerCase() : "";
-
-        if (userRole === "admin") {
-          console.log("Mengarahkan ke Dashboard Admin...");
-          window.location.replace("/admin/dashboard");
-        } else {
-          console.log("Mengarahkan ke Landing Page User...");
-          window.location.replace("/"); 
-        }
+      onSuccess: (result) => {
+        // Role diambil langsung dari respons backend, bukan dari localStorage
+        const target = result.user.role === "admin" ? "/admin/dashboard" : "/";
+        window.location.replace(target);
       },
-      onError: (err: any) => {
+      onError: (err: Error) => {
         setErrorMessage(err.message || "Gagal masuk");
       },
     });

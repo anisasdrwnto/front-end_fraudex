@@ -36,7 +36,7 @@ export function RegisterForm() {
       onSuccess: () => {
         window.location.href = "/login"; // Beralih ke halaman login setelah registrasi sukses
       },
-      onError: (err: any) => {
+       onError: (err: Error) => {
         setErrorMessage(err.message || "Gagal mendaftarkan akun");
       },
     });
