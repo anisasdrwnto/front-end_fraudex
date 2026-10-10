@@ -1,7 +1,8 @@
 import { type AuthUser, saveSession } from "./auth-storage";
 
-// URL backend dibaca dari environment variable, jangan di-hardcode lagi.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Buang garis miring di akhir dan akhiran /api/v1 kalau terlanjur tertulis
+const API_BASE_URL = RAW_API_URL.replace(/\/+$/, "").replace(/\/api\/v1$/, "");
 const API_PREFIX = `${API_BASE_URL}/api/v1`;
 
 type Result<T> =
